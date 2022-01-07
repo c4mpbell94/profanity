@@ -725,27 +725,18 @@ __kernel void profanity_score_matching(__global mp_number * const pInverse, __gl
 }
 
 __kernel void profanity_score_leading(__global mp_number * const pInverse, __global result * const pResult, __constant const uchar * const data1, __constant const uchar * const data2, const uchar scoreMax) {
-	const size_t id = get_global_id(0);
-	__global const uchar * const hash = pInverse[id].d;
-	int score = 0;
+  const size_t id = get_global_id(0);
+  __global const uchar * const hash = pInverse[id].d;
+  int score = 0;
 
-	for (int i = 0; i < 20; ++i) {
-		if ((hash[i] & 0xF0) >> 4 == data1[0]) {
-			++score;
-		}
-		else {
-			break;
-		}
+    if (pInverse[id].d[0] == 0) {
+        score = 4;            
+        for (int i = 4; i < 20; ++i) {
+          score += (hash[i] == 0);
+      }
+    }
 
-		if ((hash[i] & 0x0F) == data1[0]) {
-			++score;
-		}
-		else {
-			break;
-		}
-	}
-
-	profanity_result_update(id, hash, pResult, score, scoreMax);
+  profanity_result_update(id, hash, pResult, score, scoreMax);
 }
 
 __kernel void profanity_score_range(__global mp_number * const pInverse, __global result * const pResult, __constant const uchar * const data1, __constant const uchar * const data2, const uchar scoreMax) {
